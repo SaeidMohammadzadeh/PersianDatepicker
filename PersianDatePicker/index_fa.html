@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Persian Datepicker — صفحهٔ معرفی</title>
+
+    <!-- فونت فارسی -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- استایل اصلی تقویم (فایل شما) -->
+    <link rel="stylesheet" href="css/persiandatepicker.css" />
+
+    <style>
+        :root { --bg:#f7f8fb; --card:#ffffff; --muted:#6b7280; --accent:#2563eb; --danger:#dc2626; --ok:#16a34a; --radius:12px; --gap:16px; font-family:"Vazirmatn", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
+        html,body{height:100%}
+        body{margin:0;background:linear-gradient(180deg,#fbfcff 0%,var(--bg) 100%);color:#0f172a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.5;padding:32px;}
+        .container{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:24px;}
+        header.site-header{display:flex;gap:16px;align-items:center;background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 6px 20px rgba(15,23,42,0.06);}
+        .logo{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#06b6d4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;}
+        header h1{margin:0;font-size:20px} header p{margin:0;color:var(--muted);font-size:13px}
+        .demo-card{background:var(--card);border-radius:var(--radius);padding:20px;box-shadow:0 6px 20px rgba(15,23,42,0.04);}
+        .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+        .preview{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);min-height:120px;display:flex;flex-direction:column;gap:12px;justify-content:flex-start;}
+        label.small{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+        input.demo-input{height:44px;border-radius:8px;border:1px solid #e6e9ee;padding:8px 12px;font-size:15px;outline:none;background:#fff;}
+        .help{font-size:13px;color:var(--muted);}
+        .docs{padding:12px;border-radius:10px;background:#0f172a10;font-size:14px;color:#0f172a;line-height:1.6;}
+        pre.snippet{background:#0b122033;border-radius:8px;padding:12px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,"Roboto Mono","Courier New",monospace;font-size:13px;color:#07203a;}
+        .notes{display:flex;gap:12px;flex-wrap:wrap}
+        .note{flex:1 1 220px;background:#fff;border-radius:10px;padding:12px;border:1px solid #eef2ff}
+        .note h4{margin:0 0 8px 0;font-size:14px}
+        footer{font-size:13px;color:var(--muted);text-align:center;padding:12px 0}
+        @media (max-width:880px){ .grid{grid-template-columns:1fr} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="site-header" role="banner">
+            <div class="logo" aria-hidden="true">PD</div>
+            <div>
+                <h1>Persian Datepicker — دموی قابل‌استفاده</h1>
+                <p>یک تاریخ‌نگار سبک با سه حالت: شمسی (Jalali)، میلادی (Gregorian) و قمری (Hijri). طراحی مناسب برای فرم‌ها و SPAها.</p>
+            </div>
+        </header>
+
+        <section class="demo-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <strong>پیش‌نمایش و نمونهٔ استفاده</strong>
+                <span class="help">کلیک روی هر ورودی تقویم ظاهر می‌شود — Esc برای بستن</span>
+            </div>
+
+            <div class="grid">
+                <div>
+                    <div class="preview">
+                        <div>
+                            <label class="small">تقویم شمسی (پیش‌فرض)</label>
+                            <input class="demo-input date-input-field" placeholder="انتخاب تاریخ (شمسی)">
+                            <input type="hidden" name="jalaliDate" />
+                        </div>
+
+                        <div>
+                            <label class="small">تقویم میلادی</label>
+                            <input class="demo-input gdate-input-field" placeholder="انتخاب تاریخ (میلادی)">
+                            <input type="hidden" name="gregorianDate" />
+                        </div>
+
+                        <div>
+                            <label class="small">تقویم قمری</label>
+                            <input class="demo-input hdate-input-field" placeholder="انتخاب تاریخ (قمری)">
+                            <input type="hidden" name="hijriDate" />
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="docs">
+                    <h3 style="margin-top:0">مستند سریع</h3>
+
+                    <div class="notes" style="margin-bottom:12px">
+                        <div class="note">
+                            <h4>کلاس‌های ورودی</h4>
+                            <div class="help">
+                                <strong class="help">.date-input-field</strong> — تقویم شمسی<br>
+                                <strong class="help">.gdate-input-field</strong> — تقویم میلادی<br>
+                                <strong class="help">.hdate-input-field</strong> — تقویم قمری
+                            </div>
+                        </div>
+
+                        <div class="note">
+                            <h4>مکان قرارگیری مقدار</h4>
+                            <div class="help">
+                                برای ارسال مقدار به فرم یا فریم‌ورک‌ها، یک <code>input[type=&quot;hidden&quot;]</code> را <em>دقیقاً بعد</em> از ورودی قابل‌دیدن قرار بدهید.
+                                توابع <code>window.syncJalaliDate</code>, <code>window.syncGregorianDate</code>, <code>window.syncHijriDate</code> مقدار انتخاب‌شده را داخل آن قرار می‌دهند.
+                            </div>
+                        </div>
+                    </div>
+
+                    <strong>نصب و راه‌اندازی</strong>
+                    <ol style="padding-left:18px;margin-top:8px">
+                        <li>در صفحهٔ خود فایل <code>css/persiandatepicker.css</code> و <code>js/persiandatepicker.js</code> را قرار دهید.</li>
+                        <li>فونت فارسی را از Google Fonts اضافه کنید (همین‌جا انجام شده).</li>
+                        <li>ورودی‌ها را با یکی از سه کلاس بالا علامت‌گذاری کنید.</li>
+                    </ol>
+
+                    <div style="margin-top:12px">
+                        <strong>نمونهٔ HTML لازم</strong>
+                        <pre class="snippet" aria-hidden="false">&lt;input class="date-input-field" placeholder="انتخاب تاریخ"&gt;
+&lt;input type="hidden" name="jalaliDate"&gt;</pre>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <strong>نکات دسترس‌پذیری</strong>
+                        <ul style="margin:8px 0 0 16px;color:var(--muted)">
+                            <li>تقویم از کلید <kbd>Escape</kbd> برای بستن پشتیبانی می‌کند.</li>
+                            <li>برای فرم‌ها، مقدار انتخاب‌شده در input مخفی قرار می‌گیرد و رویداد <code>input</code> dispatch می‌شود.</li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+
+            <div style="margin-top:16px">
+                <strong>نمونهٔ فراخوانی دستی (در صورت لازم)</strong>
+                <pre class="snippet">&lt;!-- اگر نیاز دارید بعد از بارگذاری جاوااسکریپت صریحاً init کنید --&gt;
+&lt;script&gt;
+  if (typeof initJalaliDatepicker === 'function') {
+    initJalaliDatepicker();
+  }
+&lt;/script&gt;</pre>
+            </div>
+        </section>
+
+        <section class="demo-card">
+            <h3 style="margin:0 0 8px 0">توضیحات فنی کوتاه</h3>
+            <div class="docs">
+                <p><strong>منطق تعطیلات:</strong> منبع تعطیلات به‌صورت رشته‌های شمسی (Jalali) تعریف شده است؛ تقویم میلادی و قمری هنگام رندر هر سلول آن تاریخ را به میلادی/قمری تبدیل می‌کنند و اگر معادل شمسی آن در لیست تعطیلات بود، آن سلول را علامت می‌زنند (رنگ رسمی = قرمز، غیررسمی = نارنجی).</p>
+
+                <p><strong>پنهان‌سازی سریع (flicker):</strong> برای جلوگیری از چشمک در کلیک اول، ورودی‌ها با هندلر <code>pointerdown</code> وصل شده‌اند و از یک پرچم موقت استفاده می‌شود تا هندلر سراسری که container را می‌بندد، در همان تعامل جلوی بستن را بگیرد.</p>
+
+                <p>
+                    <strong>تطبیق جهت/ستون تعطیلات:</strong> ترتیب ستون‌های هفته به صورت مناسب برای هر تقویم تنظیم شده است:
+                    <ul style="margin:8px 0 0 16px;color:var(--muted)">
+                        <li>شمسی: شنبه .. جمعه (جمعه ستون آخر)</li>
+                        <li>میلادی: دوشنبه .. یکشنبه (یکشنبه ستون آخر)</li>
+                        <li>قمری: شنبه .. جمعه (جمعه ستون آخر)</li>
+                    </ul>
+                </p>
+            </div>
+        </section>
+        <footer>
+            <a href="https://www.linkedin.com/in/saeid-mohammadzadeh-a1353b2a8/" style="color:#2563eb;text-decoration:none;font-weight:500" target="_blank">سعید محمدزاده</a>
+            &nbsp; | &nbsp;
+            <a href="https://mahaleyeweb.ir/" style="color:#2563eb;text-decoration:none;font-weight:500" target="_blank">محله‌ی وب</a>
+        </footer>
+    </div>
+
+    <div id="jalaliDatepicker" class="jalali-datepicker-container hidden" aria-hidden="true"></div>
+    <script src="js/persiandatepicker.js"></script>
+</body>
+</html>

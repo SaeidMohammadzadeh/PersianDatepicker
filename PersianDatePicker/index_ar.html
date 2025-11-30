@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Persian Datepicker — عرض تجريبي</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/persiandatepicker.css" />
+
+    <style>
+        :root{--bg:#f7f8fb;--card:#fff;--muted:#6b7280;--accent:#2563eb;--danger:#dc2626;--ok:#16a34a;--radius:12px;font-family:Cairo,system-ui,-apple-system,"Segoe UI",Roboto,Arial;}
+        html,body{height:100%}
+        body{margin:0;background:linear-gradient(180deg,#fbfcff 0%,var(--bg) 100%);color:#0f172a;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.5;padding:32px;}
+        .container{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:24px;}
+        header.site-header{display:flex;gap:16px;align-items:center;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 20px rgba(15,23,42,0.06);}
+        .logo{width:64px;height:64px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#06b6d4);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px;}
+        header h1{margin:0;font-size:20px} header p{margin:0;color:var(--muted);font-size:13px}
+        .demo-card{background:var(--card);border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(15,23,42,0.04);}
+        .grid{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+        .preview{padding:12px;border-radius:10px;background:linear-gradient(180deg,#fff,#fbfdff);min-height:120px;display:flex;flex-direction:column;gap:12px;justify-content:flex-start;}
+        label.small{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+        input.demo-input{height:44px;border-radius:8px;border:1px solid #e6e9ee;padding:8px 12px;font-size:15px;outline:none;background:#fff;}
+        .help{font-size:13px;color:var(--muted);}
+        .docs{padding:12px;border-radius:10px;background:#0f172a10;font-size:14px;color:#0f172a;line-height:1.6;}
+        pre.snippet{background:#0b122033;border-radius:8px;padding:12px;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,"Roboto Mono","Courier New",monospace;font-size:13px;color:#07203a;}
+        .notes{display:flex;gap:12px;flex-wrap:wrap}
+        .note{flex:1 1 220px;background:#fff;border-radius:10px;padding:12px;border:1px solid #eef2ff}
+        .note h4{margin:0 0 8px 0;font-size:14px}
+        footer{font-size:13px;color:var(--muted);text-align:center;padding:12px 0}
+        @media (max-width:880px){ .grid{grid-template-columns:1fr} }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="site-header" role="banner">
+            <div class="logo" aria-hidden="true">PD</div>
+            <div>
+                <h1>Persian Datepicker — عرض تجريبي</h1>
+                <p>مكوّن تقويم خفيف يدعم ثلاثة أوضاع: جلالي، ميلادي، قمري. مصمّم للاستمارات وتطبيقات SPA.</p>
+            </div>
+        </header>
+
+        <section class="demo-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                <strong>المعاينة والاستخدام</strong>
+                <span class="help">انقر على أي حقل لفتح التقويم — اضغط Esc للإغلاق</span>
+            </div>
+
+            <div class="grid">
+                <div>
+                    <div class="preview">
+                        <div>
+                            <label class="small">جلالي (فارسي)</label>
+                            <input class="demo-input date-input-field" placeholder="اختر تاريخ جلالي">
+                            <input type="hidden" name="jalaliDate" />
+                        </div>
+
+                        <div>
+                            <label class="small">ميلادي</label>
+                            <input class="demo-input gdate-input-field" placeholder="اختر تاريخ ميلادي">
+                            <input type="hidden" name="gregorianDate" />
+                        </div>
+
+                        <div>
+                            <label class="small">قمري</label>
+                            <input class="demo-input hdate-input-field" placeholder="اختر تاريخ قمري">
+                            <input type="hidden" name="hijriDate" />
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="docs">
+                    <h3 style="margin-top:0">مستندات سريعة</h3>
+
+                    <div class="notes" style="margin-bottom:12px">
+                        <div class="note">
+                            <h4>فئات الحقول</h4>
+                            <div class="help">
+                                <strong>.date-input-field</strong> — جلالي<br>
+                                <strong>.gdate-input-field</strong> — ميلادي<br>
+                                <strong>.hdate-input-field</strong> — قمري
+                            </div>
+                        </div>
+
+                        <div class="note">
+                            <h4>حقل مخفي</h4>
+                            <div class="help">
+                                ضع <code>input[type="hidden"]</code> مباشرة بعد الحقل الظاهر لاستقبال القيمة.
+                                الدوال <code>window.syncJalaliDate</code>, <code>window.syncGregorianDate</code>, <code>window.syncHijriDate</code> تقوم بتعيين القيمة.
+                            </div>
+                        </div>
+                    </div>
+
+                    <strong>التثبيت</strong>
+                    <ol style="padding-left:18px;margin-top:8px">
+                        <li>أضف <code>css/persiandatepicker.css</code> و <code>js/persiandatepicker.js</code> إلى صفحتك.</li>
+                        <li>أدرج الخط المناسب (اختياري).</li>
+                        <li>حدد الحقول بواسطة الفئات أعلاه.</li>
+                    </ol>
+
+                    <div style="margin-top:12px">
+                        <strong>HTML المطلوب</strong>
+                        <pre class="snippet" aria-hidden="false">&lt;input class="date-input-field" placeholder="Select date"&gt;
+&lt;input type="hidden" name="jalaliDate"&gt;</pre>
+                    </div>
+
+                    <div style="margin-top:12px">
+                        <strong>سهولة الوصول</strong>
+                        <ul style="margin:8px 0 0 16px;color:var(--muted)">
+                            <li>اضغط <kbd>Escape</kbd> لإغلاق التقويم.</li>
+                            <li>القيمة المختارة تُكتب في الحقل المخفي ويتم إصدار حدث <code>input</code>.</li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+
+            <div style="margin-top:16px">
+                <strong>تهيئة يدوية (اختياري)</strong>
+                <pre class="snippet">&lt;!-- يتم التهيئة تلقائياً عند DOMContentLoaded; استدعِ init يدوياً إذا احتجت --&gt;
+&lt;script&gt;
+  if (typeof initJalaliDatepicker === 'function') {
+    initJalaliDatepicker();
+  }
+&lt;/script&gt;</pre>
+            </div>
+        </section>
+
+        <section class="demo-card">
+            <h3 style="margin:0 0 8px 0">ملاحظات فنية</h3>
+            <div class="docs">
+                <p><strong>منطق العطل:</strong> تُعرَّف العطل كسلاسل جلالية؛ خلايا الميلادي والقمري تؤشّر بتحويل التاريخ للجلالي ومقارنتهما (رسمي = أحمر، غير رسمي = برتقالي).</p>
+
+                <p><strong>منع الوميض:</strong> تُستخدم أحداث <code>pointerdown</code> وعلم مؤقت لمنع وميض النقر الأول.</p>
+
+                <p>
+                    <strong>ترتيب الأسبوع:</strong>
+                    <ul style="margin:8px 0 0 16px;color:var(--muted)">
+                        <li>جلالي: السبت .. الجمعة (الجمعة العمود الأخير)</li>
+                        <li>ميلادي: الاثنين .. الأحد (الأحد العمود الأخير)</li>
+                        <li>قمري: السبت .. الجمعة (الجمعة العمود الأخير)</li>
+                    </ul>
+                </p>
+            </div>
+        </section>
+        <footer>
+            <a href="https://www.linkedin.com/in/saeid-mohammadzadeh-a1353b2a8/" style="color:#2563eb;text-decoration:none;font-weight:500" target="_blank">Saeid Mohammadzadeh</a>
+            &nbsp; | &nbsp;
+            <a href="https://mahaleyeweb.ir/" style="color:#2563eb;text-decoration:none;font-weight:500" target="_blank">mahaleyeweb.ir</a>
+        </footer>
+    </div>
+
+    <div id="jalaliDatepicker" class="jalali-datepicker-container hidden" aria-hidden="true"></div>
+    <script src="js/persiandatepicker.js"></script>
+</body>
+</html>

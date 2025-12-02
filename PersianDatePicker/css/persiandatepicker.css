@@ -1,116 +1,161 @@
-﻿
+/* persiandatepicker.css - complete file
+   Includes font import, layout, colors, accessibility, and final overrides
+   Place this file as css/persiandatepicker.css and ensure it's loaded after other site CSS
+*/
 
+/* Font: Vazirmatn from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap');
+
+:root {
+    --picker-width: 340px;
+    --picker-bg: #ffffff;
+    --picker-border: #e6e9ee;
+    --picker-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    --accent-purple: #6b21a8;
+    --accent-blue: #007bff;
+    --danger: #dc2626;
+    --muted: #6b7280;
+    --radius: 8px;
+    --gap: 8px;
+    --btn-height: 36px;
+    --font-stack: "Vazirmatn", Tahoma, "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+/* Global body default (won't override user site but provides good fallback) */
 body {
-    font-family: "Vazirmatn", sans-serif;
+    font-family: var(--font-stack);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Force Persian font on datepicker and all its generated children */
-@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap');
-
-.jalali-datepicker-container * {
-    font-family: "Vazirmatn", "Tahoma", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
-}
-
-
+/* Shared container (supports either #jalaliDatepicker or .jalali-datepicker-container) */
+#jalaliDatepicker,
 .jalali-datepicker-container {
-    width: 340px;
-    background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+    width: var(--picker-width);
+    background: var(--picker-bg);
+    border: 1px solid var(--picker-border);
+    border-radius: var(--radius);
+    box-shadow: var(--picker-shadow);
     position: absolute;
     z-index: 10000;
     padding: 10px;
+    box-sizing: border-box;
+    line-height: 1;
+    font-family: var(--font-stack) !important;
+    color: #0f172a;
 }
 
+/* Hide helper */
+.hidden {
+    display: none !important;
+}
 
+/* Header: navigation controls */
 .pdhheader {
     display: flex;
+    gap: 6px;
     align-items: center;
     justify-content: center;
-    gap: 6px;
     margin-bottom: 6px;
-    height: 40px; /* ارتفاع ثابت */
+    height: 40px;
+    box-sizing: border-box;
 }
 
-    .pdhheader button  {
-        background: #007bff;
+    .pdhheader button {
+        background: var(--accent-blue);
         color: #fff;
         border: none;
-        height: 36px;
+        height: var(--btn-height);
         min-width: 36px;
-        padding: 0;
+        padding: 0 8px;
         border-radius: 6px;
         cursor: pointer;
         font-weight: 600;
-        display: flex;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
+        box-sizing: border-box;
     }
 
-    .pdhheader select  {
-        height: 36px;
+        .pdhheader button:focus {
+            outline: 3px solid rgba(59,130,246,0.15);
+            outline-offset: 2px;
+        }
+
+    .pdhheader select {
+        height: var(--btn-height);
         padding: 0 8px;
         border-radius: 6px;
-        border: 1px solid #ccc;
+        border: 1px solid var(--picker-border);
         background: #fafafa;
         font-weight: 600;
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        box-sizing: border-box;
     }
 
-
+/* Calendar grid */
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+    gap: 6px;
     margin-top: 8px;
+    align-items: center;
+    box-sizing: border-box;
 }
 
 .day-pdhheader {
-    padding: 8px 0;
+    padding: 6px 0;
     border-radius: 50%;
-    cursor: pointer;
-    transition: background .12s;
     text-align: center;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 13px;
+    user-select: none;
 }
 
     .day-pdhheader.friday {
-        color: #d93030;
+        color: var(--danger);
     }
 
+/* Day cells */
 .day-cell {
     padding: 8px 0;
     border-radius: 50%;
     cursor: pointer;
-    transition: background .12s;
+    transition: background .12s, color .12s, transform .06s;
     text-align: center;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    font-size: 14px;
 }
 
     .day-cell:hover {
-        background: #e6f2ff;
+        background: #f1f8ff;
     }
 
 .empty-cell {
     background: transparent;
 }
 
+/* states */
 .selected-day {
-    background: #007bff !important;
+    background: var(--accent-blue) !important;
     color: #fff !important;
     font-weight: 700;
 }
 
 .today {
-    background: rebeccapurple !important;
+    background: var(--accent-purple) !important;
     color: #fff !important;
     font-weight: 700;
 }
 
 .holiday-official {
-    color: #d93030;
+    color: var(--danger);
     font-weight: 700;
 }
 
@@ -119,23 +164,141 @@ body {
     font-weight: 700;
 }
 
-.hidden {
-    display: none !important;
+/* --- Actions (go-today + clear) --- */
+/* The JS appends an actions wrapper as the last child; support both selectors */
+#jalaliDatepicker > div:last-child,
+.jalali-datepicker-container > div:last-child {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: center !important;
+    margin-top: 8px !important;
+    padding: 0 6px !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
 }
 
+/* Direction-aware ordering: JS also sets dir attribute but enforce here */
+#jalaliDatepicker[dir="rtl"] > div:last-child,
+.jalali-datepicker-container[dir="rtl"] > div:last-child {
+    flex-direction: row-reverse !important;
+}
 
-.go-today-btn {
-    width: 100%;
-    margin-top: 10px;
-    padding: 8px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    background: rebeccapurple;
-    color: #fff;
+#jalaliDatepicker[dir="ltr"] > div:last-child,
+.jalali-datepicker-container[dir="ltr"] > div:last-child {
+    flex-direction: row !important;
+}
+
+/* Buttons shared style */
+.go-today-btn,
+.clear-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: var(--btn-height) !important;
+    min-height: var(--btn-height) !important;
+    padding: 0 12px !important;
+    line-height: 1 !important;
+    font-size: 14px !important;
+    border-radius: 8px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+    width: auto !important;
+    margin-top: 0 !important;
+    cursor: pointer !important;
     font-weight: 700;
 }
 
-    .go-today-btn:hover {
-        filter: brightness(.95);
+/* two-thirds / one-third visual split */
+.go-today-btn {
+    flex: 2 1 0 !important;
+    border: none !important;
+    background: var(--accent-purple) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 6px rgba(107,33,168,0.12) !important;
+}
+
+.clear-btn {
+    flex: 1 1 0 !important;
+    background: var(--danger) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+/* Hover/focus */
+.go-today-btn:hover {
+    filter: brightness(.95);
+}
+
+.clear-btn:hover {
+    filter: brightness(.95);
+}
+
+.go-today-btn:focus, .clear-btn:focus {
+    outline: 3px solid rgba(99,102,241,0.12) !important;
+    outline-offset: 2px !important;
+}
+
+/* Small screens: allow calendar to shrink a bit */
+@media (max-width: 380px) {
+    #jalaliDatepicker, .jalali-datepicker-container {
+        width: calc(100% - 20px);
+        left: 10px !important;
+        right: 10px !important;
     }
+
+    .pdhheader select {
+        font-size: 13px;
+        padding: 0 6px;
+    }
+
+    .day-pdhheader {
+        font-size: 12px;
+    }
+
+    .day-cell {
+        font-size: 13px;
+        min-height: 34px;
+        padding: 6px 0;
+    }
+
+    .go-today-btn, .clear-btn {
+        font-size: 13px;
+        padding: 0 8px;
+        height: 34px;
+        min-height: 34px;
+    }
+}
+
+/* Accessibility: reduce motion for prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .day-cell {
+        transition: none !important;
+    }
+}
+
+/* ===== Final overrides: cancel any legacy rules like width:100% or margin-top applied earlier ===== */
+#jalaliDatepicker .go-today-btn,
+.jalali-datepicker-container .go-today-btn,
+#jalaliDatepicker .clear-btn,
+.jalali-datepicker-container .clear-btn {
+    width: auto !important;
+    margin-top: 0 !important;
+    min-width: 0 !important;
+}
+
+/* Ensure the today pill color remains consistent (some themes may override) */
+#jalaliDatepicker .today, .jalali-datepicker-container .today {
+    background: var(--accent-purple) !important;
+    color: #fff !important;
+}
+
+/* Force font on all generated children for consistent rendering */
+#jalaliDatepicker *,
+.jalali-datepicker-container * {
+    font-family: var(--font-stack) !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}

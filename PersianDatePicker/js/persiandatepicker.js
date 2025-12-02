@@ -1,14 +1,14 @@
-﻿/* persiandatepicker.js
-   Complete JS for Jalali (date-input-field), Gregorian (gdate-input-field), and Hijri (hdate-input-field) pickers.
-   - Week headers ordering:
-     * Jalali: Saturday..Friday  (Friday = last column)
-     * Gregorian: Monday..Sunday (Sunday = last column)
-     * Hijri: Saturday..Friday   (Friday = last column)
-   - Holidays: source Jalali strings; for Gregorian/Hijri we convert and mark equivalent Gregorian/Hijri cells.
-   - Single shared container element: #jalaliDatepicker
-   - Robust pointer/focus wiring with temporary prevent-hide flag to avoid flicker and race conditions.
-   -Saeid Mohammadzadeh  - https://www.linkedin.com/in/saeid-mohammadzadeh-a1353b2a8/
-   -MahaleyeWeb 2025 - https://MahaleyeWeb.ir
+/* persiandatepicker.js
+  Complete JS for Jalali (date-input-field), Gregorian (gdate-input-field), and Hijri (hdate-input-field) pickers.
+  - Week headers ordering:
+    * Jalali: Saturday..Friday  (Friday = last column)
+    * Gregorian: Monday..Sunday (Sunday = last column)
+    * Hijri: Saturday..Friday   (Friday = last column)
+  - Holidays: source Jalali strings; for Gregorian/Hijri we convert and mark equivalent Gregorian/Hijri cells.
+  - Single shared container element: #jalaliDatepicker
+  - Robust pointer/focus wiring with temporary prevent-hide flag to avoid flicker and race conditions.
+  -Saeid Mohammadzadeh  - https://www.linkedin.com/in/saeid-mohammadzadeh-a1353b2a8/
+  -MahaleyeWeb 2025 - https://MahaleyeWeb.ir
 */
 
 /* utility */
@@ -66,7 +66,6 @@ function jdToGregorian(jd) {
 }
 
 function islamicToJD(hy, hm, hd) {
-    // Tabular Islamic calendar (arithmetical approximation)
     var jd = hd + Math.ceil(29.5 * (hm - 1)) + (hy - 1) * 354 + Math.floor((3 + (11 * hy)) / 30) + 1948439 - 1;
     return Math.floor(jd);
 }
@@ -141,7 +140,18 @@ const J_DAYS = ["ش", "ی", "د", "س", "چ", "پ", "ج"]; // Saturday..Friday (
 const G_MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const G_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]; // Monday..Sunday (Sunday = last)
 const H_MONTHS_AR = ["محرم", "صفر", "ربیع‌الاول", "ربیع‌الثانی", "جمادی‌الاول", "جمادی‌الثانی", "رجب", "شعبان", "رمضان", "شوال", "ذیقعده", "ذیحجه"];
-const H_DAYS_AR_SHORT = ["س", "ح", "ن", "ث", "ر", "خ", "ج"]; // خلاصه: Sat..Fri (جمعه آخر)
+const H_DAYS_AR_SHORT = ["س", "ح", "ن", "ث", "ر", "خ", "ج"]; // Sat..Fri (جمعه آخر)
+
+/* central helper to style action buttons uniformly */
+function styleActionButton(btn) {
+    btn.style.height = '36px';
+    btn.style.lineHeight = '18px';
+    btn.style.fontSize = '13px';
+    btn.style.display = 'inline-flex';
+    btn.style.alignItems = 'center';
+    btn.style.justifyContent = 'center';
+    btn.style.cursor = 'pointer';
+}
 
 /* ---------- Global pointerdown handler (bubble phase) ---------- */
 if (!window._persianDatepickerGlobalPointerHandlerInstalled) {
@@ -210,6 +220,12 @@ class JalaliDatePicker {
         this.container.style.top = `${top}px`;
     }
 
+    _ensureDirection(isRTL) {
+        // set container direction and text alignment
+        this.container.dir = isRTL ? 'rtl' : 'ltr';
+        this.container.style.textAlign = isRTL ? 'right' : 'left';
+    }
+
     show() {
         if (!this.input) return;
         this.render();
@@ -272,8 +288,33 @@ class JalaliDatePicker {
         this.render(); this.hide();
     }
 
+    _clearSelection() {
+        this.selectedDate = null;
+        if (this.input) {
+            try {
+                this.input.value = '';
+                window.syncJalaliDate(this.input, '');
+            } catch (e) {
+                const hidden = this.input.nextElementSibling;
+                if (hidden) {
+                    hidden.value = '';
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+            this.inputSelectedMap.set(this.input, {
+                selectedDate: this.selectedDate,
+                currentJY: this.currentJY,
+                currentJM: this.currentJM
+            });
+        }
+        this.render();
+    }
+
     render() {
         this.container.innerHTML = '';
+        // enforce RTL for Jalali
+        this._ensureDirection(true);
+
         // header
         const hdr = document.createElement('div'); hdr.className = 'pdhheader';
         const prevYear = document.createElement('button'); prevYear.textContent = '<<'; prevYear.type = 'button';
@@ -295,7 +336,13 @@ class JalaliDatePicker {
 
         // week header (Jalali: Saturday..Friday, Friday last)
         const weekHeader = document.createElement('div'); weekHeader.className = 'calendar-grid';
-        J_DAYS.forEach((d, i) => { const dh = document.createElement('div'); dh.className = 'day-pdhheader'; dh.textContent = d; if (i === 6) dh.classList.add('friday'); weekHeader.appendChild(dh); });
+        J_DAYS.forEach((d, i) => {
+            const dh = document.createElement('div');
+            dh.className = 'day-pdhheader';
+            dh.textContent = d;
+            if (i === 6) dh.classList.add('friday');
+            weekHeader.appendChild(dh);
+        });
         this.container.appendChild(weekHeader);
 
         // grid
@@ -305,17 +352,14 @@ class JalaliDatePicker {
         const emptyCount = (jsDay + 1) % 7; // map to Saturday-first columns
         for (let i = 0; i < emptyCount; i++) { const e = document.createElement('div'); e.className = 'empty-cell'; grid.appendChild(e); }
 
-        const daysInMonth = this._daysInJMonth(this.currentJY, this.currentJM);
+        const daysInMonth = (this._daysInJMonth(this.currentJY, this.currentJM));
         for (let d = 1; d <= daysInMonth; d++) {
             const cell = document.createElement('div'); cell.className = 'day-cell'; cell.textContent = d;
             const fd = normalizeYMD(this.currentJY, this.currentJM, d); cell.dataset.date = fd;
             const gOfDay = toGregorian(this.currentJY, this.currentJM, d);
-            // mark Friday in Jalali calendar logic (Friday = Gregorian getDay() === 5 -> map to last column)
             if (gOfDay.getDay() === 5) cell.classList.add('holiday-official');
-
             if (this.holidays.official.indexOf(fd) !== -1) cell.classList.add('holiday-official');
             else if (this.holidays.unofficial.indexOf(fd) !== -1) cell.classList.add('holiday-unofficial');
-
             if (this.currentJY === this.today.jy && this.currentJM === this.today.jm && d === this.today.jd) cell.classList.add('today');
             if (this.selectedDate === fd) cell.classList.add('selected-day');
 
@@ -324,9 +368,46 @@ class JalaliDatePicker {
         }
         this.container.appendChild(grid);
 
-        const btn = document.createElement('button'); btn.className = 'go-today-btn'; btn.type = 'button'; btn.textContent = this._makeTodayLabel();
+        // actions: short go-to-today + clear (red) — align for RTL
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.alignItems = 'center';
+        actions.style.gap = '8px';
+        actions.style.marginTop = '8px';
+        // For RTL pickers, we want buttons visually in RTL order (today on left, clear on right in DOM but visually reversed by dir)
+        actions.style.flexDirection = 'row-reverse';
+
+        const btn = document.createElement('button'); btn.className = 'go-today-btn'; btn.type = 'button';
+        try {
+            const j = this.today;
+            const g = toGregorian(j.jy, j.jm, j.jd);
+            const weekNames = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه", "شنبه"];
+            const wName = weekNames[g.getDay()] || '';
+            btn.textContent = `امروز ${wName} ${j.jy}/${pad(j.jm)}/${pad(j.jd)}`;
+        } catch (e) { btn.textContent = 'امروز'; }
+        btn.style.flex = '2 1 0';
+        btn.style.border = '1px solid #e6e9ee';
+        btn.style.background = '#fff';
+        btn.style.borderRadius = '6px';
+        btn.style.padding = '0 10px';
+        styleActionButton(btn);
+
+        const clr = document.createElement('button'); clr.className = 'clear-btn'; clr.type = 'button';
+        clr.textContent = 'خالی';
+        clr.style.flex = '1 1 0';
+        clr.style.background = '#dc2626';
+        clr.style.color = '#fff';
+        clr.style.border = 'none';
+        clr.style.borderRadius = '6px';
+        clr.style.padding = '0 10px';
+        styleActionButton(clr);
+
+        clr.addEventListener('click', (ev) => { ev.stopPropagation(); this._clearSelection(); });
         btn.addEventListener('click', (ev) => { ev.stopPropagation(); this._goToSpecificToday(); });
-        this.container.appendChild(btn);
+
+        actions.appendChild(btn);
+        actions.appendChild(clr);
+        this.container.appendChild(actions);
     }
 
     changeMonth(step) { this.currentJM += step; if (this.currentJM > 12) { this.currentJM = 1; this.currentJY++; } if (this.currentJM < 1) { this.currentJM = 12; this.currentJY--; } this.render(); }
@@ -345,7 +426,7 @@ class GregorianDatePicker {
         this.currentGY = this.today.gy;
         this.currentGM = this.today.gm;
         this.selectedDate = null;
-        this.holidays = getHolidays(); // Jalali strings
+        this.holidays = getHolidays();
         this.inputSelectedMap = new WeakMap();
         this._computeHolidayGregorianSet();
     }
@@ -414,6 +495,11 @@ class GregorianDatePicker {
         this.container.style.top = `${top}px`;
     }
 
+    _ensureDirection(isRTL) {
+        this.container.dir = isRTL ? 'rtl' : 'ltr';
+        this.container.style.textAlign = isRTL ? 'right' : 'left';
+    }
+
     show() {
         if (!this.input) return;
         this.render();
@@ -461,11 +547,9 @@ class GregorianDatePicker {
 
     _makeTodayLabel() {
         const g = this.today;
-        const dayNames = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-        const wd = new Date(g.gy, g.gm - 1, g.gd).getDay(); // 0=Sun..6=Sat
-        // map JS getDay to index in dayNames (Mon..Sun)
-        const mappedIndex = (wd + 6) % 7; // transforms 0(Sun)->6,1(Mon)->0, ...
-        const wdName = dayNames[mappedIndex] || 'today';
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const wd = new Date(g.gy, g.gm - 1, g.gd).getDay();
+        const wdName = dayNames[wd] || 'today';
         return `go to today ${wdName} ${g.gy}/${pad(g.gm)}/${pad(g.gd)}`;
     }
 
@@ -477,8 +561,29 @@ class GregorianDatePicker {
         this.render(); this.hide();
     }
 
+    _clearSelection() {
+        this.selectedDate = null;
+        if (this.input) {
+            try {
+                this.input.value = '';
+                window.syncGregorianDate(this.input, '');
+            } catch (e) {
+                const hidden = this.input.nextElementSibling;
+                if (hidden) {
+                    hidden.value = '';
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+            this.inputSelectedMap.set(this.input, { selectedDate: this.selectedDate, currentGY: this.currentGY, currentGM: this.currentGM });
+        }
+        this.render();
+    }
+
     render() {
         this.container.innerHTML = '';
+        // enforce LTR for Gregorian
+        this._ensureDirection(false);
+
         const hdr = document.createElement('div'); hdr.className = 'pdhheader';
         const prevYear = document.createElement('button'); prevYear.textContent = '<<'; prevYear.type = 'button';
         prevYear.addEventListener('click', (ev) => { ev.stopPropagation(); this.changeYear(-1); });
@@ -503,7 +608,7 @@ class GregorianDatePicker {
             const dh = document.createElement('div');
             dh.className = 'day-pdhheader';
             dh.textContent = G_DAYS[i];
-            if (i === 6) dh.classList.add('friday'); // Sunday column styled as weekend
+            if (i === 6) dh.classList.add('friday');
             weekHeader.appendChild(dh);
         }
         this.container.appendChild(weekHeader);
@@ -519,20 +624,17 @@ class GregorianDatePicker {
             const cell = document.createElement('div'); cell.className = 'day-cell'; cell.textContent = d;
             const fd = normalizeYMD(this.currentGY, this.currentGM, d); cell.dataset.date = fd;
 
-            // holiday marking by converted Jalali holidays -> greg set
             if (this.holidayGregOfficial && this.holidayGregOfficial.has(fd)) {
                 cell.classList.add('holiday-official');
             } else if (this.holidayGregUnofficial && this.holidayGregUnofficial.has(fd)) {
                 cell.classList.add('holiday-unofficial');
             } else {
-                // fallback: convert this greg date to jalali and check original lists
                 const jal = toJalali(this.currentGY, this.currentGM, d);
                 const jalStr = normalizeYMD(jal.jy, jal.jm, jal.jd);
                 if ((this.holidays.official || []).indexOf(jalStr) !== -1) cell.classList.add('holiday-official');
                 else if ((this.holidays.unofficial || []).indexOf(jalStr) !== -1) cell.classList.add('holiday-unofficial');
             }
 
-            // Sunday (JS getDay() === 0) should be final column; ensure it's styled as official
             const gDayIndex = new Date(this.currentGY, this.currentGM - 1, d).getDay();
             if (gDayIndex === 0) {
                 if (!cell.classList.contains('holiday-unofficial')) cell.classList.add('holiday-official');
@@ -547,9 +649,44 @@ class GregorianDatePicker {
         }
         this.container.appendChild(grid);
 
-        const btn = document.createElement('button'); btn.className = 'go-today-btn'; btn.type = 'button'; btn.textContent = this._makeTodayLabel();
+        // actions (LTR: normal row order)
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.alignItems = 'center';
+        actions.style.gap = '8px';
+        actions.style.marginTop = '8px';
+        actions.style.flexDirection = 'row';
+
+        const btn = document.createElement('button'); btn.className = 'go-today-btn'; btn.type = 'button';
+        try {
+            const g = this.today;
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const wdName = dayNames[new Date(g.gy, g.gm - 1, g.gd).getDay()] || '';
+            btn.textContent = `Today ${wdName} ${g.gy}/${pad(g.gm)}/${pad(g.gd)}`;
+        } catch (e) { btn.textContent = 'Today'; }
+        btn.style.flex = '2 1 0';
+        btn.style.border = '1px solid #e6e9ee';
+        btn.style.background = '#fff';
+        btn.style.borderRadius = '6px';
+        btn.style.padding = '0 10px';
+        styleActionButton(btn);
+
+        const clr = document.createElement('button'); clr.className = 'clear-btn'; clr.type = 'button';
+        clr.textContent = 'Clear';
+        clr.style.flex = '1 1 0';
+        clr.style.background = '#dc2626';
+        clr.style.color = '#fff';
+        clr.style.border = 'none';
+        clr.style.borderRadius = '6px';
+        clr.style.padding = '0 10px';
+        styleActionButton(clr);
+
+        clr.addEventListener('click', (ev) => { ev.stopPropagation(); this._clearSelection(); });
         btn.addEventListener('click', (ev) => { ev.stopPropagation(); this._goToSpecificToday(); });
-        this.container.appendChild(btn);
+
+        actions.appendChild(btn);
+        actions.appendChild(clr);
+        this.container.appendChild(actions);
     }
 
     changeMonth(step) { this.currentGM += step; if (this.currentGM > 12) { this.currentGM = 1; this.currentGY++; } if (this.currentGM < 1) { this.currentGM = 12; this.currentGY--; } this.render(); }
@@ -638,6 +775,11 @@ class HijriDatePicker {
         this.container.style.top = `${top}px`;
     }
 
+    _ensureDirection(isRTL) {
+        this.container.dir = isRTL ? 'rtl' : 'ltr';
+        this.container.style.textAlign = isRTL ? 'right' : 'left';
+    }
+
     show() {
         if (!this.input) return;
         this.render();
@@ -685,7 +827,7 @@ class HijriDatePicker {
 
     _makeTodayLabel() {
         const g = this.today.gDate;
-        const dayNamesAr = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+        const dayNamesAr = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
         const wd = g.getDay();
         const wdAr = dayNamesAr[wd] || 'اليوم';
         const hy = this.today.hy, hm = pad(this.today.hm), hd = pad(this.today.hd);
@@ -700,8 +842,29 @@ class HijriDatePicker {
         this.render(); this.hide();
     }
 
+    _clearSelection() {
+        this.selectedDate = null;
+        if (this.input) {
+            try {
+                this.input.value = '';
+                window.syncHijriDate(this.input, '');
+            } catch (e) {
+                const hidden = this.input.nextElementSibling;
+                if (hidden) {
+                    hidden.value = '';
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+            this.inputSelectedMap.set(this.input, { selectedDate: this.selectedDate, currentHY: this.currentHY, currentHM: this.currentHM });
+        }
+        this.render();
+    }
+
     render() {
         this.container.innerHTML = '';
+        // enforce RTL for Hijri
+        this._ensureDirection(true);
+
         const hdr = document.createElement('div'); hdr.className = 'pdhheader';
         const prevYear = document.createElement('button'); prevYear.textContent = '<<'; prevYear.type = 'button';
         prevYear.addEventListener('click', (ev) => { ev.stopPropagation(); this.changeYear(-1); });
@@ -726,26 +889,22 @@ class HijriDatePicker {
             const dh = document.createElement('div');
             dh.className = 'day-pdhheader';
             dh.textContent = H_DAYS_AR_SHORT[i];
-            if (i === 6) dh.classList.add('friday'); // Friday last
+            if (i === 6) dh.classList.add('friday');
             weekHeader.appendChild(dh);
         }
         this.container.appendChild(weekHeader);
 
-        // grid: determine first weekday by converting hijri 1 -> gregorian weekday
         const grid = document.createElement('div'); grid.className = 'calendar-grid';
-        const firstG = hijriToGregorian(this.currentHY, this.currentHM, 1); // Date
-        const startIndex = (firstG.getDay() + 1) % 7; // map JS getDay to Sat..Fri index
+        const firstG = hijriToGregorian(this.currentHY, this.currentHM, 1);
+        const startIndex = (firstG.getDay() + 1) % 7;
         for (let i = 0; i < startIndex; i++) { const e = document.createElement('div'); e.className = 'empty-cell'; grid.appendChild(e); }
 
-        // days in hijri month: compute via next month difference
         let daysInMonth = 30;
         try {
             const nextG = hijriToGregorian(this.currentHY, this.currentHM + 1, 1);
             const diff = Math.round((nextG.getTime() - firstG.getTime()) / (1000 * 60 * 60 * 24));
             if (diff > 0 && diff < 40) daysInMonth = diff;
-        } catch (e) {
-            daysInMonth = 30;
-        }
+        } catch (e) { daysInMonth = 30; }
 
         for (let d = 1; d <= daysInMonth; d++) {
             const cell = document.createElement('div'); cell.className = 'day-cell'; cell.textContent = d;
@@ -755,7 +914,6 @@ class HijriDatePicker {
             if (this.holidayHijriOfficial && this.holidayHijriOfficial.has(fd)) cell.classList.add('holiday-official');
             else if (this.holidayHijriUnofficial && this.holidayHijriUnofficial.has(fd)) cell.classList.add('holiday-unofficial');
 
-            // weekend: convert to gregorian and check weekday == Friday (5)
             const gOfDay = hijriToGregorian(this.currentHY, this.currentHM, d);
             if (gOfDay && gOfDay.getDay && gOfDay.getDay() === 5) {
                 if (!cell.classList.contains('holiday-unofficial')) cell.classList.add('holiday-official');
@@ -778,9 +936,45 @@ class HijriDatePicker {
 
         this.container.appendChild(grid);
 
-        const btn = document.createElement('button'); btn.className = 'go-today-btn'; btn.type = 'button'; btn.textContent = this._makeTodayLabel();
+        // actions (RTL order)
+        const actions = document.createElement('div');
+        actions.style.display = 'flex';
+        actions.style.alignItems = 'center';
+        actions.style.gap = '8px';
+        actions.style.marginTop = '8px';
+        actions.style.flexDirection = 'row-reverse';
+
+        const btn = document.createElement('button'); btn.className = 'go-today-btn'; btn.type = 'button';
+        try {
+            const gToday = this.today.gDate || new Date();
+            const arWeek = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+            const wd = gToday.getDay();
+            const wdName = arWeek[wd] || '';
+            btn.textContent = `اليوم ${wdName} ${this.today.hy}/${pad(this.today.hm)}/${pad(this.today.hd)}`;
+        } catch (e) { btn.textContent = 'اليوم'; }
+        btn.style.flex = '2 1 0';
+        btn.style.border = '1px solid #e6e9ee';
+        btn.style.background = '#fff';
+        btn.style.borderRadius = '6px';
+        btn.style.padding = '0 10px';
+        styleActionButton(btn);
+
+        const clr = document.createElement('button'); clr.className = 'clear-btn'; clr.type = 'button';
+        clr.textContent = 'مسح';
+        clr.style.flex = '1 1 0';
+        clr.style.background = '#dc2626';
+        clr.style.color = '#fff';
+        clr.style.border = 'none';
+        clr.style.borderRadius = '6px';
+        clr.style.padding = '0 10px';
+        styleActionButton(clr);
+
+        clr.addEventListener('click', (ev) => { ev.stopPropagation(); this._clearSelection(); });
         btn.addEventListener('click', (ev) => { ev.stopPropagation(); this._goToSpecificToday(); });
-        this.container.appendChild(btn);
+
+        actions.appendChild(btn);
+        actions.appendChild(clr);
+        this.container.appendChild(actions);
     }
 
     changeMonth(step) {
